@@ -101,6 +101,10 @@ server:
             # The hosted fleet's VPC. Every cell is one IP carrying many users;
             # without this the 17th user on a cell is refused.
             - "__VPC_CIDR__"
+            # Cells provisioned before CELL_EXTRA_HOSTS still dial from their
+            # public IP until their engine container is next recreated. Listed
+            # here until then; remove each as it moves onto the VPC route.
+            - "167.99.41.206"   # roswell.lurker.chat
         custom-limits: {}
 
     ip-check-script:
