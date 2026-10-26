@@ -102,8 +102,10 @@ server:
             # without this the 17th user on a cell is refused.
             - "__VPC_CIDR__"
             # Cells provisioned before CELL_EXTRA_HOSTS still dial from their
-            # public IP until their engine container is next recreated. Listed
-            # here until then; remove each as it moves onto the VPC route.
+            # public IP until they are moved by hand (control plane,
+            # CELL_ENGINE.md "Existing cells": cell.env line, new updater,
+            # `latest --force --engine`, then `getent hosts` inside the engine).
+            # Remove each only after that check shows the VPC address.
             - "167.99.41.206"   # roswell.lurker.chat
         custom-limits: {}
 
