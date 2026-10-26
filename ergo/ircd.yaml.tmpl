@@ -186,7 +186,9 @@ accounts:
     # and require Ergo's multiclient mode to be enabled.
     nick-reservation:
         enabled: true
-        additional-nick-limit: 0
+        # Grouped alternates (/msg NickServ GROUP), beyond the account name.
+        # Ergo ships 0; a reserved nick leaves the pool, so there is a cap.
+        additional-nick-limit: 5
         method: strict
         allow-custom-enforcement: false
         guest-nickname-format: "Guest-*"
