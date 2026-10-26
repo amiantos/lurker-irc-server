@@ -45,16 +45,20 @@ doctl compute droplet create "$DROPLET_NAME" \
   --region "$DO_REGION" --size "$IRC_SIZE" --image "$IRC_IMAGE" \
   --vpc-uuid "$VPC_ID" --tag-names "$TAG" --project-id "$DO_PROJECT_ID" \
   --ssh-keys "$SSH_KEY_FINGERPRINTS" \
+  --enable-ipv6 \
   --user-data-file "${SCRIPT_DIR}/cloud-init.sh" --wait
 
 PUB="$(doctl compute droplet get "$DROPLET_NAME" --format PublicIPv4 --no-header)"
+PUB6="$(doctl compute droplet get "$DROPLET_NAME" --format PublicIPv6 --no-header)"
 PRIV="$(doctl compute droplet get "$DROPLET_NAME" --format PrivateIPv4 --no-header)"
 cat <<DONE
 
-${DROPLET_NAME} is up.  public=${PUB}  vpc=${PRIV}
+${DROPLET_NAME} is up.  public=${PUB}  ipv6=${PUB6}  vpc=${PRIV}
 
-  1. DNS:  irc.lurker.chat  A → ${PUB}   (and AAAA if you enable IPv6)
-           Wait for it to resolve before step 3: certbot needs it.
+  1. DNS:  irc.lurker.chat  A    → ${PUB}
+           irc.lurker.chat  AAAA → ${PUB6}
+           Wait for both to resolve before step 3: certbot needs them, and
+           Let's Encrypt validates over IPv6 first when an AAAA exists.
   2. ssh root@${PUB}
        git clone <this repo> /opt/lurker-irc-server
        cd /opt/lurker-irc-server && cp ergo.env.example ergo.env

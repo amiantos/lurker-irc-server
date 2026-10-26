@@ -16,9 +16,9 @@ decided is in `lurker-dev/IRC_SERVER_PLAN.md`; this repo is the how.
 
 1. `deploy/provision.sh` from a workstation with `doctl` and the fleet's `cp.secrets.env`
    sourced. It creates the `lurker-irc` tag and firewall and a 1 GB droplet in the `lurker`
-   VPC with `deploy/cloud-init.sh` as user-data (Docker, certbot, swap). It prints the
-   public IP, the VPC IP, and the VPC CIDR for `ergo.env`.
-2. DNS: `irc.lurker.chat A <public ip>`. Wait for it to resolve.
+   VPC, IPv6 enabled, with `deploy/cloud-init.sh` as user-data (Docker, certbot, swap). It
+   prints the public IPv4 and IPv6, the VPC IP, and the VPC CIDR for `ergo.env`.
+2. DNS: `irc.lurker.chat A <ipv4>` and `AAAA <ipv6>`. Wait for both to resolve.
 3. On the droplet: clone this repo to `/opt/lurker-irc-server`, `cp ergo.env.example ergo.env`,
    fill it in. Oper hashes come from `scripts/genpasswd.sh`; the Resend key is a separate,
    sending-only key for this server; `VPC_CIDR` from step 1.
