@@ -1,0 +1,14 @@
+#!/bin/sh
+# certbot deploy hook: copy the renewed cert where the container reads it and
+# rehash (Ergo reloads certificates on SIGHUP, no disconnect). Installed by
+# first-run.sh at /etc/letsencrypt/renewal-hooks/deploy/.
+set -eu
+DOMAIN="irc.lurker.chat"
+DEST="/opt/lurker-irc-server/data/tls"
+mkdir -p "$DEST"
+cp "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" "$DEST/fullchain.pem"
+cp "/etc/letsencrypt/live/$DOMAIN/privkey.pem" "$DEST/privkey.pem"
+chmod 600 "$DEST/privkey.pem"
+if docker ps --format '{{.Names}}' | grep -qx ergo; then
+  docker kill -s HUP ergo
+fi

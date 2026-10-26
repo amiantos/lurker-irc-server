@@ -1,0 +1,366 @@
+# irc.lurker.chat — Ergo configuration TEMPLATE.
+#
+# scripts/render.sh replaces every double-underscore placeholder from ergo.env and writes
+# data/ircd.yaml. Edit THIS file, never the rendered one. Derived from Ergo's
+# default.yaml (v2.19.1); every departure from the default is commented with a
+# "why". Settings not mentioned here keep Ergo's defaults, which are documented
+# in the upstream file.
+
+network:
+    # The NETWORK token and the welcome line. No spaces or special characters.
+    name: Lurker
+
+server:
+    name: irc.lurker.chat
+
+    listeners:
+        # Loopback plaintext, reachable only from inside the container: the compose
+        # healthcheck. Never exposed. There is NO public plaintext port.
+        "127.0.0.1:6667":
+
+        # IRC over TLS, the port every client uses.
+        ":6697":
+            tls:
+                cert: /ircd/tls/fullchain.pem
+                key: /ircd/tls/privkey.pem
+            proxy: false
+            min-tls-version: 1.2
+
+        # IRC over WebSocket for browser clients (gamja, Kiwi) that want to look
+        # around without Lurker. Ergo speaks it natively, so no reverse proxy.
+        ":443":
+            websocket: true
+            tls:
+                cert: /ircd/tls/fullchain.pem
+                key: /ircd/tls/privkey.pem
+
+    # No plaintext listener exists, so there is nothing for STS to upgrade from,
+    # and a sticky client-side policy is only a trap if a cert ever goes bad.
+    sts:
+        enabled: false
+        duration: 1mo2d5m
+        port: 6697
+        preload: false
+
+    websockets:
+        # Empty = any origin may connect. Per-IP limits below bound the abuse.
+        allowed-origins: []
+
+    casemapping: "ascii"
+    enforce-utf8: true
+
+    # Cloaks, not hostnames (default). See ip-cloaking.
+    lookup-hostnames: false
+    forward-confirm-hostnames: true
+
+    # Ask identd. Ergo's default is check-ident: false plus coerce-ident: '~u',
+    # which throws away every ident. Hosted lurker.chat cells answer identd with a
+    # per-user ident (lu<id>), so with the lookup on, two users on one cell are
+    # lu1@cloak and lu2@cloak and a ban on *!lu1@* is a ban on one person.
+    # Self-hosters with identd get the same; everyone else gets the usual ~tilde.
+    check-ident: true
+
+    motd: ircd.motd
+    motd-formatting: true
+
+    idle-timeouts:
+        registration: 60s
+        ping: 1m30s
+        disconnect: 2m30s
+
+    # RELAYMSG on, chanops allowed: lets a bridge bot present bridged users as
+    # distinct nicks instead of an envelope. Not used at launch; see the plan.
+    relaymsg:
+        enabled: true
+        separators: "/"
+        available-to-chanops: true
+
+    proxy-allowed-from:
+        - localhost
+
+    # No WEBIRC gateways at launch (deliberate: hosted cells get nothing special).
+    webirc: []
+
+    max-sendq: 96k
+
+    compatibility:
+        force-trailing: true
+        send-unprefixed-sasl: true
+        allow-truncation: false
+
+    ip-limits:
+        count: true
+        max-concurrent-connections: 16
+        throttle: true
+        window: 10m
+        max-connections-per-window: 32
+        cidr-len-ipv4: 32
+        cidr-len-ipv6: 64
+        exempted:
+            - "localhost"
+            # The hosted fleet's VPC. Every cell is one IP carrying many users;
+            # without this the 17th user on a cell is refused.
+            - "__VPC_CIDR__"
+        custom-limits: {}
+
+    ip-check-script:
+        enabled: false
+
+    ip-cloaking:
+        enabled: true
+        enabled-for-always-on: true
+        # Cloaks read like pwbs2ui4377257x8.lurker
+        netname: "lurker"
+        # NOTE: a cloak is derived from the IP alone, so every user on one hosted
+        # cell shares a HOST. The IDENT tells them apart (check-ident above): ban
+        # ident@host, never *@host. See the oper notes.
+        cidr-len-ipv4: 32
+        cidr-len-ipv6: 64
+        num-bits: 64
+
+    secure-nets: []
+
+    oper-throttle: 10s
+
+    # NickServ!NickServ@lurker.chat rather than @localhost
+    override-services-hostname: "lurker.chat"
+
+    suppress-lusers: false
+
+accounts:
+    authentication-enabled: true
+
+    registration:
+        # A community home cannot have closed registration.
+        enabled: true
+        allow-before-connect: true
+        throttling:
+            enabled: true
+            duration: 10m
+            # Default is 30. A small network never legitimately sees that.
+            max-attempts: 10
+        # Default is 4, the library minimum.
+        bcrypt-cost: 10
+        verify-timeout: "32h"
+
+        # The single biggest spam lever. Mail goes out through Resend.
+        email-verification:
+            enabled: true
+            sender: "noreply@lurker.chat"
+            require-tls: true
+            helo-domain: "irc.lurker.chat"
+            mta:
+                server: smtp.resend.com
+                port: 465
+                username: "resend"
+                password: "__RESEND_API_KEY__"
+                implicit-tls: true
+            address-blacklist: []
+            address-blacklist-syntax: "glob"
+            timeout: 60s
+            password-reset:
+                enabled: true
+                cooldown: 1h
+                timeout: 1d
+
+    login-throttling:
+        enabled: true
+        duration: 1m
+        max-attempts: 3
+
+    skip-server-password: false
+    login-via-pass-command: true
+    advertise-scram: true
+
+    # A wall at the door is hostile to first contact. Channel +R if spam arrives.
+    require-sasl:
+        enabled: false
+        exempted:
+            - "localhost"
+
+    # Decided 2026-10-26: strict. A registered nick is its owner's and an
+    # unauthenticated holder becomes Guest-*. Logged-in users may still change
+    # to any unreserved nick (force-nick-equals-account off): bans key on
+    # ident@host, so nick-equals-account buys nothing here, and on it would
+    # force-rename a Lurker user whose configured nick differs from their account
+    # and require Ergo's multiclient mode to be enabled.
+    nick-reservation:
+        enabled: true
+        additional-nick-limit: 0
+        method: strict
+        allow-custom-enforcement: false
+        guest-nickname-format: "Guest-*"
+        force-guest-format: false
+        force-nick-equals-account: false
+        forbid-anonymous-nick-changes: false
+
+    # Ergo's bouncer mode, OFF. Lurker already is the always-connected client;
+    # this is a plain ircd. Ergo's own comment for `enabled: false`: "as is the
+    # typical behavior of IRC servers". The IRCv3 features do not depend on it.
+    # (Ergo would require it ON for force-nick-equals-account, which is off.)
+    multiclient:
+        enabled: false
+        allowed-by-default: false
+        always-on: "disabled"
+        auto-away: "disabled"
+
+    # Opers can grant HostServ vhosts to regulars (no self-service exists).
+    vhosts:
+        enabled: true
+        max-length: 64
+        valid-regexp: '^[0-9A-Za-z.\-_/]+$'
+
+    default-user-modes: +i
+
+    # Deliberately NOT coupled to lurker.chat accounts. Keep these off.
+    auth-script:
+        enabled: false
+    oauth2:
+        enabled: false
+    jwt-auth:
+        enabled: false
+
+channels:
+    default-modes: +ntC
+    max-channels-per-client: 100
+    operator-only-creation: false
+    registration:
+        enabled: true
+        operator-only: false
+        max-channels-per-account: 15
+    list-delay: 0s
+    invite-expiration: 24h
+    # No auto-join. Lurker picks the user's channels; other clients expect none.
+
+oper-classes:
+    "chat-moderator":
+        title: Chat Moderator
+        capabilities:
+            - "kill"
+            - "ban"
+            - "nofakelag"
+            - "relaymsg"
+            - "vhosts"
+            - "sajoin"
+            - "samode"
+            - "snomasks"
+    "server-admin":
+        title: Server Admin
+        extends: "chat-moderator"
+        capabilities:
+            - "rehash"
+            - "accreg"
+            - "chanreg"
+            - "history"
+            - "defcon"
+            - "massmessage"
+            - "metadata"
+
+# One block per human. Nothing shared. Visible in WHOIS on purpose: people
+# should be able to see who runs the place.
+opers:
+    brad:
+        class: "server-admin"
+        hidden: false
+        whois-line: runs this place
+        password: "__OPER_BRAD_HASH__"
+        # To require a client certificate too, add a SHA-256 fingerprint:
+        # certfp: "..."
+    jawsh:
+        class: "server-admin"
+        hidden: false
+        whois-line: runs this place
+        password: "__OPER_JAWSH_HASH__"
+
+logging:
+    -
+        method: stderr
+        type: "* -userinput -useroutput"
+        level: info
+
+debug:
+    recover-from-errors: true
+
+lock-file: "ircd.lock"
+
+datastore:
+    # Accounts and channel registrations. Back this file up (deploy/backup.sh).
+    path: ircd.db
+    autoupgrade: true
+    mysql:
+        enabled: false
+    postgresql:
+        enabled: false
+    sqlite:
+        enabled: false
+
+languages:
+    enabled: true
+    default: en
+    # Inside the container the language files ship beside the binary.
+    path: /ircd-bin/languages
+
+limits:
+    nicklen: 32
+    identlen: 20
+    realnamelen: 150
+    channellen: 64
+    awaylen: 390
+    kicklen: 390
+    topiclen: 390
+    monitor-entries: 100
+    whowas-entries: 100
+    chan-list-modes: 100
+    registration-messages: 1024
+    multiline:
+        max-bytes: 4096
+        max-lines: 100
+
+fakelag:
+    enabled: true
+    window: 1s
+    burst-limit: 5
+    messages-per-window: 2
+    cooldown: 2s
+    command-budgets:
+        "CHATHISTORY": 16
+        "MARKREAD":    16
+        "MONITOR":     1
+        "WHO":         4
+        "WEBPUSH":     1
+
+roleplay:
+    enabled: false
+
+authtoken:
+    enabled: false
+
+# No message history. Lurker keeps its own, never consumed upstream CHATHISTORY,
+# and the server holding other people's messages is a liability, not a feature.
+history:
+    enabled: false
+
+# Secrets are templated in, not injected through ERGO__ env overrides: those
+# cannot be rehashed, and we want cert and config reloads without a restart.
+allow-environment-overrides: false
+
+# Display names, avatars, channel metadata: the reason this server exists.
+metadata:
+    enabled: true
+    operator-only-modification: false
+    max-subs: 100
+    max-keys: 100
+    client-throttle:
+        enabled: true
+        duration: 2m
+        max-attempts: 10
+
+# Lurker does its own push.
+webpush:
+    enabled: false
+
+# Off until there is a consumer. Highly privileged when on.
+api:
+    enabled: false
+    listener: "127.0.0.1:8089"
+    bearer-tokens: []

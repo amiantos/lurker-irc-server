@@ -1,0 +1,35 @@
+# irc.lurker.chat — one Ergo, nothing else.
+#
+# Bring-up order: scripts/render.sh (writes data/ircd.yaml from the template and
+# ergo.env), certificates in data/tls/, then `docker compose up -d`.
+services:
+  ergo:
+    # Pin the version. `stable` moves under you and an upgrade disconnects
+    # everyone, so upgrades are a deliberate scripts/update.sh.
+    image: ghcr.io/ergochat/ergo:v2.19.1
+    container_name: ergo
+    restart: unless-stopped
+    ports:
+      - "6697:6697" # IRC over TLS
+      - "443:443"   # IRC over WebSocket (wss://irc.lurker.chat)
+    volumes:
+      # /ircd is the image's working dir: ircd.yaml, ircd.db, tls/ live here.
+      - ./data:/ircd
+      - ./ergo/ircd.motd:/ircd/ircd.motd:ro
+    # Bypass the image's entrypoint: it would GENERATE a default config (public
+    # plaintext :6667) if ours were missing, and mint self-signed certs. With
+    # this, a missing data/ircd.yaml fails the container instead.
+    entrypoint: ["/ircd-bin/ergo"]
+    command: ["run", "--conf", "/ircd/ircd.yaml"]
+    healthcheck:
+      # The loopback plaintext listener exists for exactly this.
+      test: ["CMD", "nc", "-z", "127.0.0.1", "6667"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"

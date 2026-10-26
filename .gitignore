@@ -1,0 +1,6 @@
+# Secrets and rendered/runtime state. The template is ergo/ircd.yaml.tmpl;
+# the rendered ircd.yaml carries secrets and lives only in data/.
+ergo.env
+data/
+*.pem
+.DS_Store
