@@ -195,30 +195,35 @@ accounts:
         exempted:
             - "localhost"
 
-    # Decided 2026-10-26: strict. A registered nick is its owner's and an
-    # unauthenticated holder becomes Guest-*. Logged-in users may still change
-    # to any unreserved nick (force-nick-equals-account off): bans key on
-    # ident@host, so nick-equals-account buys nothing here, and on it would
-    # force-rename a Lurker user whose configured nick differs from their account
-    # and require Ergo's multiclient mode to be enabled.
+    # Decided 2026-10-26, revised 2026-10-27: strict AND nick equals account,
+    # the pair Ergo's manual recommends. A registered nick is its owner's and
+    # an unauthenticated holder becomes Guest-*. A logged-in user IS their
+    # account name: every login (SASL, IDENTIFY, VERIFY) re-NICKs them to it,
+    # NICK away from it is refused, and if the account name is held by another
+    # client the login is dropped instead. So +b, +I, +e and ChanServ AMODE by
+    # name are unambiguous (WHO shows the `r` flag), on top of ban-by-ident.
+    # Cost: a Lurker user whose nick differs from their account is renamed on
+    # connect. Ergo refuses this flag unless multiclient is enabled (below).
     nick-reservation:
         enabled: true
-        # Grouped alternates (/msg NickServ GROUP), beyond the account name.
-        # Ergo ships 0; a reserved nick leaves the pool, so there is a cap.
-        additional-nick-limit: 5
+        # Grouped alternates (/msg NickServ GROUP). Unusable under
+        # force-nick-equals-account (Ergo's own note), so none.
+        additional-nick-limit: 0
         method: strict
         allow-custom-enforcement: false
         guest-nickname-format: "Guest-*"
         force-guest-format: false
-        force-nick-equals-account: false
+        force-nick-equals-account: true
         forbid-anonymous-nick-changes: false
 
-    # Ergo's bouncer mode, OFF. Lurker already is the always-connected client;
-    # this is a plain ircd. Ergo's own comment for `enabled: false`: "as is the
-    # typical behavior of IRC servers". The IRCv3 features do not depend on it.
-    # (Ergo would require it ON for force-nick-equals-account, which is off.)
+    # Shared sessions are ENABLED only because Ergo requires it for
+    # force-nick-equals-account; nobody gets them unless they opt in
+    # (/msg NickServ SET multiclient true). Always-on, Ergo's actual bouncer
+    # mode, stays OFF: Lurker already is the always-connected client, and this
+    # is a plain ircd with no held nicks or storage to babysit. A rehash cannot
+    # change always-on; the other keys here it can.
     multiclient:
-        enabled: false
+        enabled: true
         allowed-by-default: false
         always-on: "disabled"
         auto-away: "disabled"

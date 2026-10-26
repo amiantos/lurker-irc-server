@@ -10,8 +10,8 @@ decided is in `lurker-dev/IRC_SERVER_PLAN.md`; this repo is the how.
 - `docker-compose.yml` runs the image `Dockerfile` builds: stock Ergo at a pinned tag plus
   the ergo-dnsbl plugin. `data/` holds the rendered config, the DNSBL policy, the datastore
   (`ircd.db`: accounts and channel registrations) and `tls/`.
-- No message history, no bouncer mode, no coupling to lurker.chat accounts. Those are
-  decisions, not omissions.
+- No message history, no always-on (bouncer) mode, no coupling to lurker.chat accounts.
+  Those are decisions, not omissions.
 
 ## Bring-up
 
@@ -47,8 +47,10 @@ Ergo logs which settings a rehash could not apply; those need `update.sh`.
   one hosted lurker.chat cell shares a host. Their idents differ (`lu12`, `lu40`: the cells
   answer identd and this server asks). `*!lu12@*` is one person; `*!*@thatcloak` is the whole
   cell, and a DLINE is worse. `+R` for drive-by spam.
-- Nick enforcement is strict: a registered nick is its owner's, and an unauthenticated
-  holder is renamed to `Guest-*`. Logged-in users may still switch to any unreserved nick.
+- Nick enforcement is strict and a nick equals its account: a registered nick is its
+  owner's, an unauthenticated holder is renamed to `Guest-*`, and anyone logged in is
+  renamed to their account name and cannot `/nick` away from it. So a name in `+b`, `+I`
+  or a ChanServ `AMODE` is one specific account.
 - Vhosts: `/msg HostServ HELP`. There is no self-service; an oper sets them.
 - **Every connecting IP is checked against DroneBL, the EFnet RBL and the Tor exit list**
   (`ergo/dnsbl.yaml`). Listed drones and proxies are refused with a message naming the list;
