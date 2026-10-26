@@ -1,0 +1,41 @@
+# ergo-dnsbl configuration (server.ip-check-script in ircd.yaml.tmpl). Ergo asks
+# this plugin about every connecting IP. Cells on the hosted fleet arrive over
+# the VPC (10.110.0.0/20), which no public blocklist can ever carry, so they
+# are unaffected by design; keep it that way rather than adding exemptions.
+#
+# Results: allow / block / require-sasl. Policy: known drones and proxies are
+# blocked outright; Tor exits may connect but must log in with SASL; anything
+# else is untouched. Test from the droplet:
+#   echo '{"ip":"1.1.1.1"}' | docker exec -i ergo /ircd-bin/ergo-dnsbl /ircd/dnsbl.yaml
+precedence: [block, require-sasl]
+
+lists:
+    -
+        host: "dnsbl.dronebl.org"
+        action: block
+        reason: "Your IP {ip} is listed in DroneBL. See https://dronebl.org/lookup?ip={ip} — or write to abuse@lurker.chat"
+        replies:
+            -
+                # Open proxies (https://dronebl.org/classes): let them in with an account.
+                codes: [8, 9, 10, 11]
+                action: require-sasl
+                reason: "Your IP {ip} is listed as an open proxy in DroneBL; log in with SASL to connect. See https://dronebl.org/lookup?ip={ip}"
+            -
+                # DroneBL's testing class.
+                codes: [1]
+                action: allow
+    -
+        host: "rbl.efnetrbl.org"
+        addresses: 4
+        action: block
+        reason: "Your IP {ip} is listed in the EFnet RBL. See https://rbl.efnetrbl.org/?i={ip} — or write to abuse@lurker.chat"
+        replies:
+            -
+                # Tor exit nodes.
+                codes: [4]
+                action: require-sasl
+                reason: "Tor is welcome here with an account: log in with SASL to connect."
+    -
+        host: "torexit.dan.me.uk"
+        action: require-sasl
+        reason: "Tor is welcome here with an account: log in with SASL to connect."

@@ -39,4 +39,5 @@ umask 077
 printf '%s\n' "$content" > "$OUT"
 # The MOTD rides along so a rehash picks up edits (see docker-compose.yml).
 cp "$ROOT/ergo/ircd.motd" "$(dirname "$OUT")/ircd.motd"
-echo "rendered $OUT (+ ircd.motd)"
+cp "$ROOT/ergo/dnsbl.yaml" "$(dirname "$OUT")/dnsbl.yaml"
+echo "rendered $OUT (+ ircd.motd, dnsbl.yaml)"

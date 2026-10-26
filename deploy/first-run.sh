@@ -19,7 +19,7 @@ install -m 0755 deploy/install-ergo-certificates /etc/letsencrypt/renewal-hooks/
 
 # 2. Config, then the container.
 scripts/render.sh
-docker compose pull
+docker compose build --pull
 docker compose up -d
 
 # 3. Nightly backup of the datastore at 04:10 UTC.

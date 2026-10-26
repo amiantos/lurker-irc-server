@@ -107,8 +107,18 @@ server:
             - "167.99.41.206"   # roswell.lurker.chat
         custom-limits: {}
 
+    # DNSBL check on every connecting IP via the ergo-dnsbl plugin baked into
+    # the image (Dockerfile); policy in ergo/dnsbl.yaml, copied to /ircd by
+    # render.sh. Loopback is exempt in Ergo; the VPC is private space no list
+    # carries, so hosted cells never trip it.
     ip-check-script:
-        enabled: false
+        enabled: true
+        command: "/ircd-bin/ergo-dnsbl"
+        args: ["/ircd/dnsbl.yaml"]
+        timeout: 4s
+        kill-timeout: 1s
+        max-concurrency: 64
+        exempt-sasl: false
 
     ip-cloaking:
         enabled: true

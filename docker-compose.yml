@@ -4,9 +4,11 @@
 # ergo.env), certificates in data/tls/, then `docker compose up -d`.
 services:
   ergo:
-    # Pin the version. `stable` moves under you and an upgrade disconnects
-    # everyone, so upgrades are a deliberate scripts/update.sh.
-    image: ghcr.io/ergochat/ergo:v2.19.1
+    # Built from ./Dockerfile: stock Ergo v2.19.1 plus the DNSBL plugin. The
+    # Ergo tag is pinned there; `stable` would move under you and an upgrade
+    # disconnects everyone, so upgrades are a deliberate scripts/update.sh.
+    build: .
+    image: lurker-irc-server/ergo:local
     container_name: ergo
     restart: unless-stopped
     ports:

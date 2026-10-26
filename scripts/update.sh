@@ -8,6 +8,6 @@ cd "$ROOT"
 git pull --ff-only
 "$ROOT/scripts/render.sh"
 "$ROOT/deploy/backup.sh"
-docker compose pull
+docker compose build --pull
 docker compose up -d
 docker compose ps

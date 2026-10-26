@@ -7,8 +7,9 @@ decided is in `lurker-dev/IRC_SERVER_PLAN.md`; this repo is the how.
 - `ergo/ircd.yaml.tmpl` is the whole configuration. Every departure from Ergo's default is
   commented with a why. `scripts/render.sh` fills the `__PLACEHOLDERS__` from `ergo.env`
   (gitignored) and writes `data/ircd.yaml`. Edit the template, never the rendered file.
-- `docker-compose.yml` runs the pinned image. `data/` holds the rendered config, the
-  datastore (`ircd.db`: accounts and channel registrations) and `tls/`.
+- `docker-compose.yml` runs the image `Dockerfile` builds: stock Ergo at a pinned tag plus
+  the ergo-dnsbl plugin. `data/` holds the rendered config, the DNSBL policy, the datastore
+  (`ircd.db`: accounts and channel registrations) and `tls/`.
 - No message history, no bouncer mode, no coupling to lurker.chat accounts. Those are
   decisions, not omissions.
 
@@ -33,7 +34,8 @@ decided is in `lurker-dev/IRC_SERVER_PLAN.md`; this repo is the how.
 |---|---|---|
 | Change config or the MOTD | edit, commit, `scripts/rehash.sh` | No |
 | Renew the cert | nothing; certbot's timer + the deploy hook | No |
-| Upgrade Ergo | bump the tag in `docker-compose.yml`, commit, `scripts/update.sh` | **Yes, everyone.** Announce it, off-peak. |
+| Upgrade Ergo or the DNSBL plugin | bump the tag or commit in `Dockerfile`, commit, `scripts/update.sh` | **Yes, everyone.** Announce it, off-peak. |
+| Change the DNSBL policy | edit `ergo/dnsbl.yaml`, commit, `scripts/rehash.sh` | No. The plugin reads its file on every check. |
 | Add an oper | add a block to the template + a hash to `ergo.env`, `scripts/rehash.sh` | No |
 | Check it from outside | `scripts/status.sh` | No |
 
@@ -48,6 +50,12 @@ Ergo logs which settings a rehash could not apply; those need `update.sh`.
 - Nick enforcement is strict: a registered nick is its owner's, and an unauthenticated
   holder is renamed to `Guest-*`. Logged-in users may still switch to any unreserved nick.
 - Vhosts: `/msg HostServ HELP`. There is no self-service; an oper sets them.
+- **Every connecting IP is checked against DroneBL, the EFnet RBL and the Tor exit list**
+  (`ergo/dnsbl.yaml`). Listed drones and proxies are refused with a message naming the list;
+  Tor exits may connect only with SASL. Hosted cells arrive over the VPC and are never
+  listed. Someone wrongly refused writes to abuse@; the lists have their own removal pages.
+  Check a specific address from the droplet:
+  `echo '{"ip":"1.2.3.4"}' | docker exec -i ergo /ircd-bin/ergo-dnsbl /ircd/dnsbl.yaml`
 - `/REHASH` from a client is the same as `scripts/rehash.sh` minus the re-render, so only
   use it after someone has already rendered.
 
