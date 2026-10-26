@@ -13,9 +13,11 @@ services:
       - "6697:6697" # IRC over TLS
       - "443:443"   # IRC over WebSocket (wss://irc.lurker.chat)
     volumes:
-      # /ircd is the image's working dir: ircd.yaml, ircd.db, tls/ live here.
+      # /ircd is the image's working dir: ircd.yaml, ircd.motd (both written by
+      # render.sh), ircd.db and tls/ live here. The MOTD is copied, not
+      # bind-mounted: git replaces files by rename, and a single-file bind mount
+      # keeps pointing at the old inode, so rehash would reload stale text.
       - ./data:/ircd
-      - ./ergo/ircd.motd:/ircd/ircd.motd:ro
     # Bypass the image's entrypoint: it would GENERATE a default config (public
     # plaintext :6667) if ours were missing, and mint self-signed certs. With
     # this, a missing data/ircd.yaml fails the container instead.

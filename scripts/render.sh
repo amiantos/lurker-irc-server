@@ -37,4 +37,6 @@ fi
 mkdir -p "$(dirname "$OUT")"
 umask 077
 printf '%s\n' "$content" > "$OUT"
-echo "rendered $OUT"
+# The MOTD rides along so a rehash picks up edits (see docker-compose.yml).
+cp "$ROOT/ergo/ircd.motd" "$(dirname "$OUT")/ircd.motd"
+echo "rendered $OUT (+ ircd.motd)"
