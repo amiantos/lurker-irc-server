@@ -2,7 +2,7 @@
 
 The config and runbook for **irc.lurker.chat**, the Lurker community's IRC network: one
 [Ergo](https://ergo.chat) with every IRCv3 feature switched on. Why it exists and what was
-decided is in `lurker-dev/IRC_SERVER_PLAN.md`; this repo is the how.
+decided is in [DECISIONS.md](DECISIONS.md); this file is the how.
 
 - `ergo/ircd.yaml.tmpl` is the whole configuration. Every departure from Ergo's default is
   commented with a why. `scripts/render.sh` fills the `__PLACEHOLDERS__` from `ergo.env`
@@ -15,8 +15,8 @@ decided is in `lurker-dev/IRC_SERVER_PLAN.md`; this repo is the how.
 
 ## Bring-up
 
-1. `deploy/provision.sh` from a workstation with `doctl` and the fleet's `cp.secrets.env`
-   sourced. It creates the `lurker-irc` tag and firewall and a 1 GB droplet in the `lurker`
+1. `deploy/provision.sh` from a workstation with `doctl` and the hosted fleet's secrets
+   (`DO_REGION`, `DO_PROJECT_ID`, `SSH_KEY_FINGERPRINTS`, `ADMIN_IP`) exported. It creates the `lurker-irc` tag and firewall and a 1 GB droplet in the `lurker`
    VPC, IPv6 enabled, with `deploy/cloud-init.sh` as user-data (Docker, certbot, swap). It
    prints the public IPv4 and IPv6, the VPC IP, and the VPC CIDR for `ergo.env`.
 2. DNS: `irc.lurker.chat A <ipv4>` and `AAAA <ipv6>`. Wait for both to resolve.
@@ -71,7 +71,13 @@ a known account. Repeat after any Ergo upgrade that touches the schema.
 
 ## Not in this repo
 
-- The hosted cells resolving `irc.lurker.chat` to the VPC IP (`extra_hosts` in
-  `lurker-control-plane/deploy/cell-cloud-init.sh`).
-- The picker entry and first-party pin in `lurker` (`builtinNetworks.json` / `.ts`).
-- The bridge: one `networks` entry and one `lurker` room member in `snitch`.
+- The hosted cells resolving `irc.lurker.chat` to the VPC IP (`extra_hosts`, written by the
+  hosted service's cell provisioning, which is not public).
+- The picker entry and first-party pin in [lurker](https://github.com/amiantos/lurker)
+  (`builtinNetworks.json` / `.ts`).
+- The bridge: one `networks` entry and one `lurker` room member in
+  [snitch](https://github.com/amiantos/snitch).
+
+## License
+
+[MPL-2.0](LICENSE), like Lurker. The config template started from Ergo's `default.yaml` (MIT).
