@@ -1,7 +1,6 @@
 # Runbook
 
 Operating irc.lurker.chat. Repo layout and what the server is: [README.md](README.md).
-Why it is the way it is: [DECISIONS.md](DECISIONS.md).
 
 ## Bring-up
 
