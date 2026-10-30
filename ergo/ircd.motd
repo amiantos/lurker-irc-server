@@ -1,7 +1,7 @@
 $bLurker.Chat$b — irc.lurker.chat
 
 A small IRC network run by the people who make Lurker (https://lurker.chat).
-Everything IRCv3 is switched on. Come say hi in $b#lurker$b.
+Everything IRCv3 is switched on. Come say hi in $b#lobby$b; $b#lurker$b is for Lurker support.
 
   Register a nick:   /msg NickServ REGISTER <password> <email>
   Help:              /msg NickServ HELP   ·   /msg ChanServ HELP

@@ -10,7 +10,7 @@ its configuration.
 |---|---|
 | Server | `irc.lurker.chat`, port 6697, TLS only |
 | WebSocket | `wss://irc.lurker.chat` for browser clients |
-| Channel | `#lurker` |
+| Channels | `#lobby` to hang out. `#lurker` is for Lurker itself: support and the project, bridged to Libera |
 | Register | `/msg NickServ REGISTER <password> <email>`, then verify the email |
 | Abuse | abuse@lurker.chat |
 
