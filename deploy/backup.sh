@@ -4,7 +4,7 @@
 # RCLONE_REMOTE is set in ergo.env (e.g. r2:lurker-irc-backups).
 #
 # ⚠ This copies the LIVE file. Ergo's datastore is an append-only log; a copy
-# taken mid-write can be truncated at the tail. The restore drill (README) must
+# taken mid-write can be truncated at the tail. The restore drill (RUNBOOK.md) must
 # prove a copy LOADS before anyone relies on this. ircd.yaml is not backed up:
 # it is rendered from git + ergo.env, and ergo.env is in the password manager.
 set -euo pipefail

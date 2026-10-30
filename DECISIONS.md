@@ -76,7 +76,7 @@ nothing special.
 Ergo derives the cloak from the IP, so every user on one hosted cell shares a cloaked host.
 What separates them is the ident: cells answer identd with a per-user `lu<id>`, so two hosted
 users are `lu12@cloak` and `lu40@cloak`. Hence **ops ban `ident@host`, never `*@host`**, which
-is why `check-ident` is on and why that rule is in the README's oper notes.
+is why `check-ident` is on and why that rule is in the runbook's oper notes.
 
 WEBIRC from the cells would give each hosted user their own cloak. Not needed while idents do
 the job, and it would be the first hosted-only privilege.
