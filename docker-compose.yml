@@ -11,9 +11,14 @@ services:
     image: lurker-irc-server/ergo:local
     container_name: ergo
     restart: unless-stopped
-    ports:
-      - "6697:6697" # IRC over TLS
-      - "443:443"   # IRC over WebSocket (wss://irc.lurker.chat)
+    # Host networking, not published ports. A published port on a bridge network
+    # reaches the container through Docker's userland proxy for IPv6 clients (the
+    # bridge has no IPv6), and the proxy re-sends from the bridge gateway, so Ergo
+    # saw every IPv6 user as 172.18.0.1: one shared cloak, one shared per-IP cap,
+    # one DNSBL check that can never match, and a host ban that hits all of them.
+    # With the host's network namespace Ergo binds :6697 and :443 itself and
+    # sees the real peer, v4 and v6. The DO firewall is the only firewall either way.
+    network_mode: host
     volumes:
       # /ircd is the image's working dir: ircd.yaml, ircd.motd (both written by
       # render.sh), ircd.db and tls/ live here. The MOTD is copied, not

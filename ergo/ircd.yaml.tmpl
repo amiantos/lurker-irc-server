@@ -15,8 +15,9 @@ server:
     name: irc.lurker.chat
 
     listeners:
-        # Loopback plaintext, reachable only from inside the container: the compose
-        # healthcheck. Never exposed. There is NO public plaintext port.
+        # Loopback plaintext, reachable only from the host (the container shares its
+        # network namespace): the compose healthcheck. Never exposed. There is NO
+        # public plaintext port.
         "127.0.0.1:6667":
 
         # IRC over TLS, the port every client uses.
