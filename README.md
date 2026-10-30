@@ -18,7 +18,7 @@ its configuration.
 In Lurker it is the first entry in the network picker. Any IRC client works.
 
 What you get: metadata and avatars, reactions, replies, multiline, typing, read markers,
-SCRAM, channel rename, message redaction. What you don't: message history, a plaintext port,
+channel rename, message redaction. What you don't: message history, a plaintext port,
 or a bouncer. A registered nick is its owner's, and once logged in your nick is your account
 name. [DECISIONS.md](DECISIONS.md) says why.
 
