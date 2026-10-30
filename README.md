@@ -1,7 +1,7 @@
 # irc.lurker.chat
 
-The Lurker community's IRC network: one [Ergo](https://ergo.chat) server with every IRCv3
-feature switched on, run by the people who make [Lurker](https://lurker.chat). This repo is
+The Lurker community's IRC network: one [Ergo](https://ergo.chat) server with the IRCv3
+features Lurker uses switched on, run by the people who make [Lurker](https://lurker.chat). This repo is
 its configuration.
 
 ## Connecting
