@@ -6,6 +6,8 @@ Everything IRCv3 is switched on. Come say hi in $b#lobby$b; $b#lurker$b is for L
   Register a nick:   /msg NickServ REGISTER <password> <email>
   Help:              /msg NickServ HELP   ·   /msg ChanServ HELP
   Rules:             be kind; no spam, no bots without asking an oper.
+                     The Lurker code of conduct applies here:
+                     https://github.com/amiantos/lurker/blob/main/CODE_OF_CONDUCT.md
   Abuse:             abuse@lurker.chat
 
 Nicks are enforced: a registered nick is its owner's. No message history is kept

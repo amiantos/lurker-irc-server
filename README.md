@@ -12,6 +12,7 @@ its configuration.
 | WebSocket | `wss://irc.lurker.chat` for browser clients |
 | Channels | `#lobby` to hang out. `#lurker` is for Lurker itself: support and the project, bridged to Libera |
 | Register | `/msg NickServ REGISTER <password> <email>`, then verify the email |
+| Rules | The [Lurker code of conduct](https://github.com/amiantos/lurker/blob/main/CODE_OF_CONDUCT.md) applies. No spam, no bots without asking an oper |
 | Abuse | abuse@lurker.chat |
 
 In Lurker it is the first entry in the network picker. Any IRC client works.
