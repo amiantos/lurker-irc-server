@@ -10,7 +10,7 @@ OUT="${1:-$ROOT/data/ircd.yaml}"
 [ -f "$ENV_FILE" ] || { echo "render: $ENV_FILE missing (copy ergo.env.example)" >&2; exit 1; }
 set -a; . "$ENV_FILE"; set +a
 
-VARS=(VPC_CIDR OPER_BRAD_HASH OPER_JAWSH_HASH RESEND_API_KEY)
+VARS=(VPC_CIDR OPER_BRAD_HASH OPER_JAWSH_HASH OPER_D3FC0N_HASH RESEND_API_KEY)
 for v in "${VARS[@]}"; do
   val="${!v:-}"
   case "$val" in
