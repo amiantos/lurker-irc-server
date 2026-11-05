@@ -18,9 +18,11 @@ its configuration.
 In Lurker it is the first entry in the network picker. Any IRC client works.
 
 What you get: metadata and avatars, reactions, replies, multiline, typing, read markers,
-channel rename, message redaction. What you don't: message history, a plaintext port,
-or a bouncer. A registered nick is its owner's, and once logged in your nick is your account
-name. The config template comments each setting with its reason.
+channel rename, message deletion (your own lines; ops in their channels; within a day). What
+you don't: message history beyond what deletion needs (a day, in RAM, and CHATHISTORY hands
+you only what you were present for), a plaintext port, or a bouncer. A registered nick is its
+owner's, and once logged in your nick is your account name. The config template comments each
+setting with its reason.
 
 ## This repo
 

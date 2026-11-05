@@ -371,10 +371,34 @@ roleplay:
 authtoken:
     enabled: false
 
-# No message history. Lurker keeps its own, never consumed upstream CHATHISTORY,
-# and the server holding other people's messages is a liability, not a feature.
+# Message history, in RAM only, and only so that a message can be deleted
+# (IRCv3 draft/message-redaction): Ergo deletes by finding the line in its
+# history buffer, and refuses to offer the cap at all while history is off.
+# Lurker keeps its own history and never reads this one. What is held: small
+# per-channel and per-user buffers, nothing on disk, lines gone after a day.
+# `join-time` keeps CHATHISTORY from handing anyone a line they weren't present
+# for, so the server still holds no one's past for anyone else to read; the
+# buffer exists for REDACT, and the one-day window is the deletion window.
 history:
-    enabled: false
+    enabled: true
+    channel-length: 512
+    client-length: 64
+    autoresize-window: 1d
+    autoreplay-on-join: 0
+    # Must be nonzero or Ergo disables redaction with CHATHISTORY (config.go).
+    chathistory-maxmessages: 100
+    znc-maxmessages: 0
+    restrictions:
+        expire-time: 1d
+        query-cutoff: 'join-time'
+        grace-period: 0s
+    persistent:
+        enabled: false
+    retention:
+        # Authors (logged in) delete their own lines; channel ops delete in
+        # their channel; opers with the `history` capability delete anywhere.
+        allow-individual-delete: true
+        enable-account-indexing: false
 
 # Secrets are templated in, not injected through ERGO__ env overrides: those
 # cannot be rehashed, and we want cert and config reloads without a restart.
