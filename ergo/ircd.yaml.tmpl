@@ -374,11 +374,19 @@ authtoken:
 # Message history, in RAM only, and only so that a message can be deleted
 # (IRCv3 draft/message-redaction): Ergo deletes by finding the line in its
 # history buffer, and refuses to offer the cap at all while history is off.
-# Lurker keeps its own history and never reads this one. What is held: small
-# per-channel and per-user buffers, nothing on disk, lines gone after a day.
-# `join-time` keeps CHATHISTORY from handing anyone a line they weren't present
-# for, so the server still holds no one's past for anyone else to read; the
-# buffer exists for REDACT, and the one-day window is the deletion window.
+# What is held: small per-channel and per-user buffers, nothing on disk, lines
+# gone after a day; the buffer exists for REDACT, and the one-day window is the
+# deletion window.
+#
+# Since lurker#1283 Lurker also reads it back after a dropped connection
+# (CHATHISTORY BETWEEN the last line it stored and its rejoin), so the day in
+# RAM doubles as the reconnect gap-fill for everyone. Who may read what: Ergo
+# refuses a channel's history to anyone not in the channel, under every
+# cutoff (server.go, errInsufficientPrivs), so the cutoff only decides how far
+# back a MEMBER may look. `join-time` was nothing before this join, which is
+# exactly the reconnect case; `registration-time` is back to the account's
+# registration, and the grace period lets a logged-out client fill the last
+# hour. A DM's history is always cut at registration, with no grace.
 history:
     enabled: true
     channel-length: 512
@@ -390,8 +398,8 @@ history:
     znc-maxmessages: 0
     restrictions:
         expire-time: 1d
-        query-cutoff: 'join-time'
-        grace-period: 0s
+        query-cutoff: 'registration-time'
+        grace-period: 1h
     persistent:
         enabled: false
     retention:
@@ -399,6 +407,14 @@ history:
         # their channel; opers with the `history` capability delete anywhere.
         allow-individual-delete: true
         enable-account-indexing: false
+    # Reactions ride TAGMSG. Ergo's default keeps the react and not the unreact,
+    # so a client filling a gap saw every reaction given and none taken back.
+    tagmsg-storage:
+        default: false
+        whitelist:
+            - "+draft/react"
+            - "+react"
+            - "+draft/unreact"
 
 # Secrets are templated in, not injected through ERGO__ env overrides: those
 # cannot be rehashed, and we want cert and config reloads without a restart.
